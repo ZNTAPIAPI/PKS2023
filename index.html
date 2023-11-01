@@ -76,7 +76,9 @@
      "esri/widgets/Swipe",
      "esri/widgets/ScaleBar",
      "esri/widgets/LayerList",
-     "esri/layers/GroupLayer"
+     "esri/layers/GroupLayer",
+     "esri/views/layers/LayerView",
+     "esri/widgets/Fullscreen",
      ],(
       Map,
       MapView,
@@ -96,7 +98,9 @@
       Swipe,
       ScaleBar,
       LayerList,
-      GroupLayer
+      GroupLayer,
+      LayerView,
+      Fullscreen,
       )=>{
       //Buat Simbologi Batas RT
       const BatasRT = {
@@ -117,7 +121,7 @@
           type: "simple-fill",
           color:[34, 40, 49,0],
           outline: {
-            color: [168, 161, 150, 1],
+            color: [168, 161, 150, 0],
             width: "3px",
             style: "short-dash-dot-dot"
           }
@@ -126,6 +130,48 @@
           type: "simple",
           title:"Batas Bidang Tanah",
           symbol: Batas1}
+      //Buat Simbologi Batas IMPADM Arum
+      const BatasIMPADM = {
+          type: "simple-fill",
+          color:[34, 40, 49,0],
+          outline: {
+            color: [168, 161, 150, 1],
+            width: "3px",
+            style: "short-dash-dot-dot"
+          }
+        };
+      const renderer_BatasIMPADM = {
+          type: "simple",
+          title:"Batas IMPADM",
+          symbol: BatasIMPADM}
+      //Buat Simbologi Kawasan Lindung
+      const Fill_Kawasan_lindung = {
+          type: "simple-fill",
+          color:[208, 212, 202,0.5],
+          outline: {
+            color: [255, 255, 255, 1],
+            width: "0.5px",
+            style: "solid"
+          }
+        };
+      const renderer_Kawasan_Lindung = {
+          type: "simple",
+          title:"Batas IMPADM",
+          symbol: Fill_Kawasan_lindung}
+      //Buat Simbologi Batas Zona Kanwil
+      const Batas_Zona_Kanwil = {
+          type: "simple-fill",
+          color:[34, 40, 49,0],
+          outline: {
+            color: [255, 251, 245, 1],
+            width: "1px",
+            style: "solid"
+          }
+        };
+      const renderer_Batas_Zona_Kanwil = {
+          type: "simple",
+          title:"Batas Zona Kanwil",
+          symbol: Batas_Zona_Kanwil}
       //Buat Simbologi Persil Sebontang
       const defaultSym1 = {
           type: "simple-fill",
@@ -280,52 +326,52 @@
           //defaultLabel: "no data",
           classBreakInfos: [
             {
-              minValue: 535700,
-              maxValue: 689800,
+              minValue: 14000,
+              maxValue: 280500,
               symbol: Kelas1,
-              label: "Rp.535.800 - 689.800"
+              label: "Rp.14.000 - 280.500"
             },
             {
-              minValue: 689801,
-              maxValue: 802400,
+              minValue: 280501,
+              maxValue: 424600,
               symbol: Kelas2,
-              label: "Rp.689.900 - 802.400"
+              label: "Rp.280.500 - 424.600"
             },
             {
-              minValue: 802401,
-              maxValue: 888550,
+              minValue: 424601,
+              maxValue: 574500,
               symbol: Kelas3,
-              label: "Rp.802.500 - 888.600"
+              label: "Rp.424.600 - 574.500"
             },
             {
-              minValue: 888551,
-              maxValue:1084000,
+              minValue: 574501,
+              maxValue: 708400,
               symbol: Kelas4,
-              label: "Rp.888.600 - 1.084.000"
+              label: "Rp.574.500 - 708.400"
             },
             {
-              minValue: 1084001,
-              maxValue: 1296000,
+              minValue: 708401,
+              maxValue: 877500,
               symbol: Kelas5,
-              label: "Rp.1.085.000 - 1.296.000"
+              label: "Rp.708.400 - 877.500"
             },
             {
-              minValue: 1296001,
-              maxValue: 1584000,
+              minValue: 877501,
+              maxValue: 1090000,
               symbol: Kelas6,
-              label: "Rp.1.297.000 - 1.584.000"
+              label: "Rp.877.500 - 1.090.000"
             },
             {
-              minValue: 1584001,
-              maxValue: 2395000,
+              minValue: 1090001,
+              maxValue: 1400000,
               symbol: Kelas7,
-              label: "Rp.1.585.000 - 2.395.000"
+              label: "Rp.1.090.001 - 1.400.000"
             },
             {
-              minValue: 2395001,
-              maxValue: 5540000,
+              minValue: 1400001,
+              maxValue: 5539445,
               symbol: Kelas8,
-              label: "Rp.2.396.000 - 5.539.000"
+              label: "Rp.1.400.000 - 5.539.500"
             },
           ]
         };
@@ -412,14 +458,23 @@
       };
       // Pop Up Template Sample 2023
       const popup_Sample2023 = {
-        title :"Nomor Entri {Nomor Entry}",
+        title :"Nomor Entri {Nomor_Entry}",
         content:
               [{
                 type:"media",
                 mediaInfos:[{
                   title:"Foto Lokasi",
                   value:{
-                    sourceURL:"{Foto}"
+                    sourceURL:"{Foto1}"
+                  }
+                }]
+              },
+              {
+                type:"media",
+                mediaInfos:[{
+                  title:"Foto Lokasi",
+                  value:{
+                    sourceURL:"{Foto2}"
                   }
                 }]
               },
@@ -429,7 +484,7 @@
                   {
                     fieldName: "Foto",
                     label: "Foto",
-                    format:"<img src='{Foto}'>",
+                    format:"<img src='{Foto1}'>",
                   },
                   {
                     fieldName: "Sumber Informasi",
@@ -667,15 +722,38 @@
               },
             ]
       };
+      //Insert SHP Kawasan Lindung
+      const Kawasan_lindung=new GeoJSONLayer({
+        url:"https://raw.githubusercontent.com/ZNTAPIAPI/ZNT_KANWIL/main/KAWASAN_LINDUNG_LONLAT.geojson?token=GHSAT0AAAAAACJXMH5NCZWUNGAO3NFOVH4AZKCOAYA",
+        //labelingInfo:labelClass,
+        renderer:renderer_Kawasan_Lindung,
+      });
+      //Insert SHP new IMPADM
+      const IMPADM_Arum=new GeoJSONLayer({
+        url:"https://raw.githubusercontent.com/ZNTAPIAPI/ZNT_KANWIL/main/BATAS_IMPADM_lonlat.geojson",
+        renderer:renderer_BatasIMPADM,
+      });
+      //Insert SHP Zona Kanwil
+      const Zona_Kanwil=new GeoJSONLayer({
+        url:"https://raw.githubusercontent.com/ZNTAPIAPI/ZNT_KANWIL/main/ZONA_KANWIL_lonlat.geojson",
+        labelingInfo:labelClass,
+        renderer:renderer8,
+      });
+      //Insert SHP Batas Zona Kanwil
+      const Batas_zona=new GeoJSONLayer({
+        url:"https://raw.githubusercontent.com/ZNTAPIAPI/ZNT_KANWIL/main/ZONA_KANWIL_lonlat.geojson",
+        //labelingInfo:labelClass,
+        renderer:renderer_Batas_Zona_Kanwil,
+      });
       //Insert SHP ZONA 2023
       const Zona2023=new GeoJSONLayer({
         url:"https://raw.githubusercontent.com/DutyKendartiwastra/ZNT2023/main/Zona_lonlat_2023.geojson",
         labelingInfo:labelClass,
         renderer:renderer3,
       });
-      //Insert SHP Sample 2023
-      const Sample023=new GeoJSONLayer({
-        url:"https://raw.githubusercontent.com/DutyKendartiwastra/ZNT2023/main/Sample_lonlat_2023.geojson",
+      //Insert sample 2023 diganti SHP Sample PKS
+      const Sample2023=new GeoJSONLayer({
+        url:"https://raw.githubusercontent.com/ZNTAPIAPI/ZNT_KANWIL/main/SAMPLE_PKS_lonlat%20-%20Copy.geojson",
         popupTemplate:popup_Sample2023,
         renderer:renderer_Sample2023
       });
@@ -724,20 +802,15 @@
         center:[117.489066,0.130173]
       });
       map.add(DRONE);
-      //map.add(persil_sebontang);
-      //map.add(Batas_RT);
       map.add(persil_T);
       map.add(geotag);
       map.add(BatasAdmin_Api2);
-      //map.add(Zona2023);
-      //map.add(Sample023);
+      map.add(Kawasan_lindung);
+      map.add(IMPADM_Arum);
+      map.add(Zona_Kanwil);
+      map.add(Batas_zona);
+      map.add(Sample2023);
       
-      //LayerList
-      //View.when(() => {
-      //    const layerList = new LayerList({
-      //      view:View
-      //    })});
-
       // Legend Muka Peta 1
       const legend = new Expand({
           content: new Legend({
@@ -752,6 +825,20 @@
           view: View,
           expanded: false,
       })});
+      //ON OFF TITIK SAMPLE
+      //const View2 = new MapView({
+      //  container: "viewDiv",
+      //  map: map2,
+      //  zoom:15,
+      //  center:[117.489066,0.130173]
+      //});
+      View.ui.add(new Expand({
+                    content: new LayerList({
+                    view: View,
+                  }),
+              view: View,
+              group: "bottom-left"}),
+      "bottom-left");
       // Gonta-ganti basemap
       const toggle = new BasemapToggle({
           view: View,
@@ -772,11 +859,16 @@
         });
       //swipe
       const swipe = new Swipe({
-          leadingLayers: [persil_T],
-          trailingLayers: [geotag],
+          leadingLayers: ([persil_T,Batas_zona]),
+          trailingLayers: ([geotag,Zona_Kanwil]),
           position: 0, // set position of widget to 35%
           view: View
         });
+      //FULL SCREEN
+      fullscreen = new Fullscreen({
+          view: View
+        });
+      View.ui.add(fullscreen, "top-left");
       //SEARCH
         const searchWidget = new Search({
           view: View,
@@ -812,7 +904,6 @@
         View.ui.add(swipe);
         View.ui.add(scaleBar, {position: "bottom-right"});
         View.ui.add(legend, "bottom-right");
-        View.ui.add(layerList, "bottom-left");
       }
      )
     </script>
